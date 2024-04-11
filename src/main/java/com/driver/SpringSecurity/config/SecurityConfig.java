@@ -2,6 +2,7 @@ package com.driver.SpringSecurity.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,30 +13,6 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
-    @Bean
-    public BCryptPasswordEncoder getPasswordEncoder(){
-        return new BCryptPasswordEncoder();
-    }
-    @Bean
-    public UserDetailsService getUserDetailsService(){
-
-        UserDetails student = User.withUsername("bharat ")
-                .password(getPasswordEncoder().encode("patel123"))
-                .roles("STUDENT")
-                .build();
-
-        UserDetails student1 = User.withUsername("shakshi")
-                .password(getPasswordEncoder().encode("shakshi"))
-                .roles("STUDENT")
-                .build();
-
-        UserDetails admin = User.withUsername("riya")
-                .password(getPasswordEncoder().encode("riya123"))
-                .roles("ADMIN")
-                .build();
-
-        return new InMemoryUserDetailsManager(student,admin,student1);
-    }
     @SuppressWarnings("removal")
     @Bean
     public SecurityFilterChain getSecurityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -44,9 +21,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests()
                 .requestMatchers("/public/**")
                 .permitAll()
-                .requestMatchers("/student/**")
-                .hasAnyRole("STUDENT", "ADMIN")
-                .requestMatchers("/admin/**")
+                .requestMatchers("/student/add/**")
+                .permitAll()
+                .requestMatchers("/student/welcome")
+                .hasAnyRole("STUDENT","ADMIN")
+                .requestMatchers("/admin/add/**")
+                .permitAll()
+                .requestMatchers("/admin/welcome")
                 .hasRole("ADMIN")
                 .anyRequest()
                 .authenticated()
@@ -56,4 +37,40 @@ public class SecurityConfig {
         return httpSecurity.build();
     }
 
+
+    @Bean
+    public BCryptPasswordEncoder getPasswordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public UserDetailsService getUserDetailsService(){
+
+//        UserDetails student = User.withUsername("Salik")
+//                .password(getPasswordEncoder().encode("salik123"))
+//                .roles("STUDENT")
+//                .build();
+//
+//        UserDetails student1 = User.withUsername("Shriniwas")
+//                .password(getPasswordEncoder().encode("shriniwas123"))
+//                .roles("STUDENT")
+//                .build();
+//
+//        UserDetails admin = User.withUsername("Arif")
+//                .password(getPasswordEncoder().encode("arif123"))
+//                .roles("ADMIN")
+//                .build();
+//
+//        return new InMemoryUserDetailsManager(student,admin,student1);
+
+        return new CustomUserDetailsService();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider getDaoAuthenticationProvider(){
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setUserDetailsService(getUserDetailsService());
+        daoAuthenticationProvider.setPasswordEncoder(getPasswordEncoder());
+        return daoAuthenticationProvider;
+    }
 }
